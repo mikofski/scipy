@@ -148,6 +148,10 @@ Scalar functions
    bisect - Bisection method.
    newton - Secant method or Newton's method.
 
+.. seealso::
+
+   `scipy.optimize.cython_optimize` -- Typed Cython versions of zeros functions
+
 Fixed point finding:
 
 .. autosummary::
