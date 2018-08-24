@@ -96,9 +96,9 @@ float, and returns.
 
 from __future__ import division, print_function, absolute_import
 
-__all__ = ['zeros', 'zeros_struct']
+__all__ = ['zeros', 'zeros_struct', 'zeros_array']
 
-from . import zeros, zeros_struct
+from . import zeros, zeros_struct, zeros_array
 
 from scipy._lib._testutils import PytestTester
 test = PytestTester(__name__)
