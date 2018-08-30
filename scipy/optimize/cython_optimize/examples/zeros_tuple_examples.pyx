@@ -20,7 +20,7 @@ XTOL, RTOL, MITR = 0.001, 0.001, 10
 DEF SIGNERR = -1
 DEF CONVERR = -2
 
-ctypedef struct scipy_newton_full_output:
+ctypedef struct scipy_zeros_full_output:
     int funcalls
     int iterations
     int error_num
@@ -61,8 +61,8 @@ def test_cython_newton(v=5.25, il=IL, args=ARGS):
 
 
 # cython newton solver with full output
-cdef scipy_newton_full_output solarcell_newton_full_output(tuple args, double tol, int maxiter):
-    cdef scipy_newton_full_output full_output
+cdef scipy_zeros_full_output solarcell_newton_full_output(tuple args, double tol, int maxiter):
+    cdef scipy_zeros_full_output full_output
     full_output.root = zeros_tuple.newton(f_solarcell, 6.0, fprime, args, tol, maxiter, <zeros_tuple.scipy_newton_parameters *> &full_output)
     if full_output.error_num == SIGNERR:
         full_output.flag = "TOL and MAXITER must be positive integers"
@@ -81,9 +81,20 @@ def test_newton_full_output(v=5.25, il=6.0, args=ARGS, tol=TOL, maxiter=MAXITER)
     return solarcell_newton_full_output((v, il,) + args, tol, maxiter)
 
 
+# cython secant solver
+cdef double solarcell_secant(tuple args):
+    return zeros_tuple.secant(f_solarcell, 6.0, args, TOL, MAXITER, NULL)
+
+
+# test cython secant solver in a loop
+def test_cython_secant(v=5.25, il=IL, args=ARGS):
+    """test secant with array"""
+    return map(solarcell_secant, ((v, il_,) + args for il_ in il))
+
+
 # cython secant solver with full output
-cdef scipy_newton_full_output solarcell_secant_full_output(tuple args, double tol, int maxiter):
-    cdef scipy_newton_full_output full_output
+cdef scipy_zeros_full_output solarcell_secant_full_output(tuple args, double tol, int maxiter):
+    cdef scipy_zeros_full_output full_output
     full_output.root = zeros_tuple.secant(f_solarcell, 6.0, args, tol, maxiter, <zeros_tuple.scipy_newton_parameters *> &full_output)
     if full_output.error_num == SIGNERR:
         full_output.flag = "TOL and MAXITER must be positive integers"
@@ -98,19 +109,8 @@ cdef scipy_newton_full_output solarcell_secant_full_output(tuple args, double to
 
 
 def test_secant_full_output(v=5.25, il=6.0, args=ARGS, tol=TOL, maxiter=MAXITER):
-    """test newton with full output"""
+    """test secant with full output"""
     return solarcell_secant_full_output((v, il,) + args, tol, maxiter)
-
-
-# cython secant solver
-cdef double solarcell_secant(tuple args):
-    return zeros_tuple.secant(f_solarcell, 6.0, args, TOL, MAXITER, NULL)
-
-
-# test cython secant solver in a loop
-def test_cython_secant(v=5.25, il=IL, args=ARGS):
-    """test secant with array"""
-    return map(solarcell_secant, ((v, il_,) + args for il_ in il))
 
 
 # cython halley solver
@@ -133,6 +133,27 @@ cdef double solarcell_bisect(tuple args):
 def test_cython_bisect(v=5.25, il=IL, args=ARGS):
     """test bisect with array"""
     return map(solarcell_bisect, ((v, il_,) + args for il_ in il))
+
+
+# cython bisect solver with full output
+cdef scipy_zeros_full_output solarcell_bisect_full_output(tuple args, double xa, double xb, double xtol, double rtol, int mitr):
+    cdef scipy_zeros_full_output full_output
+    full_output.root = zeros_tuple.bisect(f_solarcell, xa, xb, args, xtol, rtol, mitr, <zeros_tuple.scipy_zeros_parameters *> &full_output)
+    if full_output.error_num == SIGNERR:
+        full_output.flag = "F(XA) and F(XB) must have opposite signs"
+        full_output.funcalls = 0
+        full_output.iterations = 0
+    elif full_output.error_num == CONVERR:
+        full_output.flag = "Failed to converge"
+    else:
+        full_output.error_num = 0
+        full_output.flag = "Converged successfully"
+    return full_output
+
+
+def test_bisect_full_output(v=5.25, il=6.0, args=ARGS, xa=7.0, xb=0.0, xtol=XTOL, rtol=RTOL, mitr=MITR):
+    """test bisect with full output"""
+    return solarcell_bisect_full_output((v, il,) + args, xa, xb, xtol, rtol, mitr)
 
 
 # cython ridder solver
@@ -166,3 +187,24 @@ cdef double solarcell_brentq(tuple args):
 def test_cython_brentq(v=5.25, il=IL, args=ARGS):
     """test brentq with array"""
     return map(solarcell_brentq, ((v, il_,) + args for il_ in il))
+
+
+# cython brentq solver with full output
+cdef scipy_zeros_full_output solarcell_brentq_full_output(tuple args, double xa, double xb, double xtol, double rtol, int mitr):
+    cdef scipy_zeros_full_output full_output
+    full_output.root = zeros_tuple.brentq(f_solarcell, xa, xb, args, xtol, rtol, mitr, <zeros_tuple.scipy_zeros_parameters *> &full_output)
+    if full_output.error_num == SIGNERR:
+        full_output.flag = "F(XA) and F(XB) must have opposite signs"
+        full_output.funcalls = 0
+        full_output.iterations = 0
+    elif full_output.error_num == CONVERR:
+        full_output.flag = "Failed to converge"
+    else:
+        full_output.error_num = 0
+        full_output.flag = "Converged successfully"
+    return full_output
+
+
+def test_brentq_full_output(v=5.25, il=6.0, args=ARGS, xa=7.0, xb=0.0, xtol=XTOL, rtol=RTOL, mitr=MITR):
+    """test brentq with full output"""
+    return solarcell_brentq_full_output((v, il,) + args, xa, xb, xtol, rtol, mitr)
