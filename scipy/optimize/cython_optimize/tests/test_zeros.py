@@ -243,14 +243,6 @@ def test_zeros_array_cython_brentq():
                        list(zeros_array_examples.test_cython_brentq()))
 
 
-{'funcalls': 13,
- 'iterations': 11,
- 'error_num': 0,
- 'root': 5.25341796875,
- 'flag': b'Converged successfully'}
-
-
-
 def test_zeros_cython_bisect_full_output():
     full_output = zeros_tuple_examples.test_bisect_full_output()
     assert full_output['error_num'] == -2
